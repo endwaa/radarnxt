@@ -22,7 +22,7 @@ public class UdarNxt {
 
 	public UdarNxt() {
 		String connected = "Connected";
-		String waiting = "Waiting...";
+		String waiting = "Waiting..!";
 		us = new UltrasonicSensor(SensorPort.S1);
 		LCD.drawString(waiting, 0, 0);
 		LCD.refresh();
@@ -37,19 +37,24 @@ public class UdarNxt {
 		dos = btc.openDataOutputStream();
 		motor.setSpeed(100);
 		motor.forward();
-
+		int rounds  = 0;
+		int numberToSubtract = 0;
+		int angle;
+		int distance;
 		while (!Button.ESCAPE.isDown()) {
-			int angle = motor.getTachoCount();
-			int distance = us.getDistance();
+			angle = motor.getTachoCount();
+			distance = us.getDistance();
+			numberToSubtract = rounds * 360;
 			
-			//TODO: Find a better solution so we don't get a stop every round.
-			if (angle >= 360) {
-				motor.resetTachoCount();
-				motor.forward();
+			if (angle - numberToSubtract >= 360) {
+				rounds++;
 			}
 
+			LCD.refresh();
+			LCD.drawInt(rounds, 1, 1);
+			
 			try {
-				dos.writeInt(angle);
+				dos.writeInt(angle - numberToSubtract);
 				dos.writeInt(distance);
 				dos.flush();
 			} catch (IOException e) {
